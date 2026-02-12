@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .order-number {
+            font-size: 18px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .customer-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .info-block h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #999;
+        }
+        .info-block p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .items-table th {
+            background-color: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+        .price {
+            text-align: right;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .total-section {
+            text-align: right;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+            gap: 50px;
+        }
+        .total-label {
+            font-weight: bold;
+        }
+        .total-amount {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .footer {
+            background-color: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            background-color: #ffc107;
+            color: #333;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🎉 Order Confirmed!</h1>
+            <div class="order-number">Order #{{ order.id }}</div>
+        </div>
+
+        <div class="content">
+            <!-- Status -->
+            <div style="text-align: center;">
+                <span class="status-badge">{{ order.get_status_display }}</span>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="section">
+                <div class="section-title">Delivery Information</div>
+                <div class="customer-info">
+                    <div class="info-block">
+                        <h3>Shipping To</h3>
+                        <p><strong>{{ order.first_name }} {{ order.last_name }}</strong></p>
+                        <p>{{ order.address }}</p>
+                        <p>{{ order.city }}, {{ order.state }} {{ order.postal_code }}</p>
+                    </div>
+                    <div class="info-block">
+                        <h3>Contact Details</h3>
+                        <p><strong>Email:</strong> {{ order.email }}</p>
+                        <p><strong>Phone:</strong> {{ order.phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="section">
+                <div class="section-title">Order Items</div>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th style="text-align: center;">Quantity</th>
+                            <th style="text-align: right;">Price</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td style="text-align: center;">{{ item.quantity }}</td>
+                            <td class="price">₹ {{ item.price }}</td>
+                            <td class="price">₹ {{ item.get_subtotal }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Total -->
+                <div class="total-section">
+                    <div class="total-row">
+                        <span class="total-label">Total Amount:</span>
+                        <span class="total-amount">₹ {{ order.total_amount }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span class="total-label">Payment Method:</span>
+                        <span>{{ order.get_payment_method_display }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="section">
+                <div style="background-color: #e7f3ff; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">
+                    <p style="margin: 0;">
+                        <strong>📦 What's Next?</strong><br>
+                        Your order has been received and is being processed. You'll receive another email once your order is shipped with tracking information.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for shopping at ShopHub! 🛍️</p>
+            <p>If you have any questions, please contact us at support@shophub.com</p>
+            <p>&copy; 2026 ShopHub. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

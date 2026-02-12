@@ -1,0 +1,322 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Order Management - ShopHub Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h2><i class="fas fa-boxes"></i> Order Management</h2>
+        <p>Manage all customer orders and update their status</p>
+    </div>
+
+    {% if messages %}
+        <div class="alert-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if orders %}
+        <div class="admin-orders-table">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Email</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr class="order-row">
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.email }}</td>
+                            <td class="fw-bold">${{ order.total_amount|floatformat:2 }}</td>
+                            <td>
+                                <select class="status-select" data-order-id="{{ order.id }}" onchange="updateOrderStatus(this)">
+                                    {% for status_value, status_label in order.ORDER_STATUS_CHOICES %}
+                                        <option value="{{ status_value }}" {% if order.status == status_value %}selected{% endif %}>
+                                            {{ status_label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Order Details Modal -->
+                        <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Order #{{ order.id }} Details</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h6 class="text-primary">Customer Information</h6>
+                                                <p><strong>Name:</strong> {{ order.customer_name }}</p>
+                                                <p><strong>Email:</strong> {{ order.email }}</p>
+                                                <p><strong>Phone:</strong> {{ order.phone }}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-primary">Order Information</h6>
+                                                <p><strong>Order Date:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+                                                <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+                                                <p><strong>Status:</strong> <span class="badge bg-warning">{{ order.get_status_display }}</span></p>
+                                            </div>
+                                        </div>
+
+                                        <hr>
+
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h6 class="text-primary">Shipping Address</h6>
+                                                <p>
+                                                    {{ order.shipping_address }}<br>
+                                                    {{ order.city }}, {{ order.country }} {{ order.postal_code }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <hr>
+
+                                        <h6 class="text-primary">Ordered Items</h6>
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th>Quantity</th>
+                                                    <th>Price</th>
+                                                    <th>Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in order.items.all %}
+                                                    <tr>
+                                                        <td>{{ item.product.name }}</td>
+                                                        <td>{{ item.quantity }}</td>
+                                                        <td>${{ item.price|floatformat:2 }}</td>
+                                                        <td class="fw-bold">${{ item.get_subtotal|floatformat:2 }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-md-6"></div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Subtotal:</strong> <span class="float-end">${{ order.get_subtotal|floatformat:2 }}</span></p>
+                                                <p class="mb-1"><strong>Shipping:</strong> <span class="float-end">${{ order.get_shipping_cost|floatformat:2 }}</span></p>
+                                                <p class="mb-3"><strong>Tax:</strong> <span class="float-end">${{ order.get_tax|floatformat:2 }}</span></p>
+                                                <p class="h6 border-top pt-2"><strong>Total:</strong> <span class="float-end text-danger">${{ order.total_amount|floatformat:2 }}</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a href="{% url 'download_invoice' order.id %}" class="btn btn-secondary" target="_blank">
+                                            <i class="fas fa-download"></i> Download Invoice
+                                        </a>
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No orders found.
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.admin-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 15px;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.admin-header h2 {
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.admin-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.admin-orders-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.status-select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.status-select:hover {
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.1);
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+}
+
+.order-row:hover {
+    background-color: #f8f9fa;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+}
+
+.alert-container {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.modal-header {
+    border-bottom: 2px solid #667eea;
+}
+
+.badge {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+function updateOrderStatus(selectElement) {
+    const orderId = selectElement.dataset.orderId;
+    const newStatus = selectElement.value;
+    
+    if (!confirm(`Are you sure you want to change the order status to "${newStatus}"?`)) {
+        selectElement.value = selectElement.options[0].value;
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('status', newStatus);
+
+    fetch(`/admin/order/${orderId}/update-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value || getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            selectElement.parentElement.innerHTML = `<span class="badge bg-info">${data.status_display}</span>`;
+        } else {
+            showNotification(data.error || 'Error updating status', 'error');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred', 'error');
+        location.reload();
+    });
+}
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+    
+    const container = document.querySelector('.alert-container') || document.querySelector('.admin-container');
+    if (container) {
+        if (!document.querySelector('.alert-container')) {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = 'alert-container';
+            container.insertBefore(alertContainer, container.firstChild);
+        }
+        document.querySelector('.alert-container').insertBefore(alertDiv, document.querySelector('.alert-container').firstChild);
+        
+        setTimeout(() => alertDiv.remove(), 3000);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

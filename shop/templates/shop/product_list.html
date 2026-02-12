@@ -1,0 +1,161 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}All Products - ShopHub{% endblock %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-lg-3">
+            <!-- SIDEBAR FILTERS -->
+            <div class="sidebar">
+                <h3>Categories</h3>
+                <ul class="category-list">
+                    <li><a href="{% url 'product_list' %}" class="active">All Products</a></li>
+                    {% for category in categories %}
+                        <li>
+                            <a href="{% url 'category_detail' slug=category.slug %}">
+                                {{ category.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- PAGE HEADER -->
+            <h2 class="section-title mb-4">
+                <i class="fas fa-box"></i> Our Products
+            </h2>
+
+            {% if products %}
+                <!-- PRODUCT COUNT -->
+                <p class="text-muted mb-4">
+                    Showing <strong>{{ products|length }}</strong> product(s)
+                </p>
+
+                <!-- PRODUCT GRID -->
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="product-card">
+                                <!-- Product Image -->
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image" loading="lazy">
+                                {% else %}
+                                    <img src="{% static 'images/no-image.svg' %}" alt="No Image" class="product-image" loading="lazy">
+                                {% endif %}
+                                
+                                <!-- Product Info -->
+                                <div class="product-body">
+                                    <h3 class="product-name">{{ product.name }}</h3>
+                                    <p class="product-description">{{ product.description|truncatewords:12 }}</p>
+                                    
+                                    <!-- Price -->
+                                    <p class="product-price">
+                                        <i class="fas fa-rupee-sign"></i> {{ product.price }}
+                                    </p>
+                                    
+                                    <!-- Category Badge -->
+                                    {% if product.category %}
+                                        <p style="font-size: 0.9rem; margin-bottom: 10px;">
+                                            <span style="background: #f0f0f0; padding: 5px 10px; border-radius: 20px; color: #666;">
+                                                <i class="fas fa-tag"></i> {{ product.category.name }}
+                                            </span>
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <!-- Stock Status -->
+                                    {% if product.is_in_stock %}
+                                        <span class="stock-status in-stock">
+                                            <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }})
+                                        </span>
+                                    {% else %}
+                                        <span class="stock-status out-of-stock">
+                                            <i class="fas fa-times-circle"></i> Out of Stock
+                                        </span>
+                                    {% endif %}
+                                    
+                                    <!-- Actions -->
+                                    <div class="product-actions mt-3">
+                                        <a href="{% url 'product_detail' pk=product.id %}" class="btn btn-secondary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% if product.is_in_stock %}
+                                            <button type="button" class="btn btn-primary w-100"
+        onclick="addToCartAjax({{ product.id }})">
+    <i class="fas fa-cart-plus"></i> Add
+</button>
+
+                                        {% else %}
+                                            <button class="btn btn-primary w-100" disabled>
+                                                <i class="fas fa-ban"></i> Unavailable
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- EMPTY STATE -->
+                <div class="alert alert-info text-center py-5">
+                    <i class="fas fa-inbox" style="font-size: 2.5rem; margin-bottom: 15px; display: block;"></i>
+                    <h4>No Products Available</h4>
+                    <p>We are adding products soon. Please check back later.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+<script>
+function addToCartAjax(productId) {
+    fetch(`/cart/add/${productId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Update cart count
+            let cartCount = document.getElementById("cart-count");
+            if (cartCount) {
+                cartCount.innerText = data.cart_count;
+            }
+
+            // Simple success message
+            showToast("Added to cart successfully ✅");
+        } else {
+            showToast(data.error || "Failed to add item ❌");
+        }
+    });
+}
+
+function showToast(message) {
+    let toast = document.createElement("div");
+    toast.innerText = message;
+
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.background = "#22c55e";
+    toast.style.color = "white";
+    toast.style.padding = "12px 18px";
+    toast.style.borderRadius = "8px";
+    toast.style.fontWeight = "600";
+    toast.style.boxShadow = "0 5px 15px rgba(0,0,0,0.2)";
+    toast.style.zIndex = "9999";
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
+}
+</script>
+
+{% endblock %}
+

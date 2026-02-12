@@ -1,0 +1,163 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Order Confirmation - ShopHub{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <!-- SUCCESS HEADER -->
+    <div class="confirmation-header">
+        <div class="success-animation">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1 class="confirmation-title">Order Placed Successfully! 🎉</h1>
+        <p class="confirmation-subtitle">Thank you for your purchase. We'll process your order shortly.</p>
+    </div>
+
+    <!-- ORDER ID CARD -->
+    <div class="order-id-card">
+        <div class="order-number">
+            <span class="label">Order Number</span>
+            <span class="value">#{{ order.id }}</span>
+        </div>
+        <div class="order-date">
+            <span class="label">Order Date</span>
+            <span class="value">{{ order.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+        <div class="order-status-badge">
+            <i class="fas fa-info-circle"></i>
+            <span>{{ order.get_status_display }}</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT GRID -->
+    <div class="confirmation-grid">
+        <!-- LEFT SECTION: ORDER ITEMS -->
+        <div class="confirmation-section">
+            <h2 class="section-title">
+                <i class="fas fa-box"></i> Order Items
+            </h2>
+            
+            <div class="items-container">
+                {% for item in order_items %}
+                    <div class="order-item">
+                        <div class="item-info">
+                            <div class="item-name">{{ item.product.name }}</div>
+                            <div class="item-quantity">Quantity: <strong>{{ item.quantity }}</strong></div>
+                        </div>
+                        <div class="item-price">
+                            <div class="price-per-unit">₹{{ item.price|floatformat:2 }}/unit</div>
+                            <div class="price-total">₹{{ item.get_subtotal|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- PRICE BREAKDOWN -->
+            <div class="price-breakdown">
+                <div class="breakdown-row">
+                    <span class="breakdown-label"><i class="fas fa-tags"></i> Subtotal</span>
+                    <span class="breakdown-value">₹{{ order.get_subtotal|floatformat:2 }}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span class="breakdown-label"><i class="fas fa-truck"></i> Shipping</span>
+                    <span class="breakdown-value free"><strong>FREE</strong></span>
+                </div>
+                <div class="breakdown-row">
+                    <span class="breakdown-label"><i class="fas fa-percentage"></i> Tax (18% GST)</span>
+                    <span class="breakdown-value">₹{{ order.get_tax|floatformat:2 }}</span>
+                </div>
+                <div class="breakdown-divider"></div>
+                <div class="breakdown-total">
+    <span><strong>Total Amount</strong></span>
+    <span><strong>₹{{ order.total_amount|floatformat:2 }}</strong></span>
+</div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT SECTION: DELIVERY & PAYMENT INFO -->
+        <div class="confirmation-section">
+            <!-- DELIVERY INFO -->
+            <div class="info-card delivery-card">
+                <h3 class="card-title">
+                    <i class="fas fa-map-marker-alt"></i> Delivery Address
+                </h3>
+                <div class="card-content">
+                    <p class="delivery-name">{{ order.first_name }} {{ order.last_name }}</p>
+                    <p class="delivery-address">{{ order.address }}</p>
+                    <p class="delivery-city">{{ order.city }}, {{ order.state }} {{ order.postal_code }}</p>
+                    <p class="delivery-phone">
+                        <i class="fas fa-phone"></i> {{ order.phone }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- BILLING INFO -->
+            <div class="info-card billing-card">
+                <h3 class="card-title">
+                    <i class="fas fa-user"></i> Billing Information
+                </h3>
+                <div class="card-content">
+                    <p><strong>{{ order.first_name }} {{ order.last_name }}</strong></p>
+                    <p>
+                        <i class="fas fa-envelope"></i> 
+                        <a href="mailto:{{ order.email }}">{{ order.email }}</a>
+                    </p>
+                    <p>
+                        <i class="fas fa-phone"></i> 
+                        {{ order.phone }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- PAYMENT INFO -->
+            <div class="info-card payment-card">
+                <h3 class="card-title">
+                    <i class="fas fa-credit-card"></i> Payment Method
+                </h3>
+                <div class="card-content">
+                    <p class="payment-method">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <strong>Cash on Delivery (COD)</strong>
+                    </p>
+                    <p class="payment-note">You'll pay when your order arrives at your doorstep.</p>
+                </div>
+            </div>
+
+            <!-- EMAIL CONFIRMATION -->
+            <div class="email-notification">
+                <i class="fas fa-check-circle"></i>
+                <p>Confirmation email sent to <strong>{{ order.email }}</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="confirmation-actions">
+    <a href="{% url 'download_invoice' order.id %}" class="btn btn-success btn-lg">
+        <i class="fas fa-file-pdf"></i> Download Invoice (PDF)
+    </a>
+
+    <a href="{% url 'my_orders' %}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-box-open"></i> Track Order
+    </a>
+
+    <a href="{% url 'product_list' %}" class="btn btn-outline btn-lg">
+        <i class="fas fa-shopping-bag"></i> Continue Shopping
+    </a>
+</div>
+
+
+    <!-- INFO BOX -->
+    <div class="confirmation-info">
+        <h3>What happens next?</h3>
+        <ol>
+            <li><strong>Order Confirmation:</strong> We'll confirm your order within 24 hours</li>
+            <li><strong>Preparation:</strong> Our team will prepare your items</li>
+            <li><strong>Dispatch:</strong> We'll ship your order and send you tracking details</li>
+            <li><strong>Delivery:</strong> Your order will arrive at your doorstep</li>
+            <li><strong>Payment:</strong> Pay the delivery agent when you receive your order</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

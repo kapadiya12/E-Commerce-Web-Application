@@ -1,0 +1,410 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}My Orders - ShopHub{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <!-- Header -->
+    <div class="orders-header">
+        <h1><i class="fas fa-history"></i> My Orders</h1>
+        <p>View and track all your orders</p>
+    </div>
+
+    {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+                <div class="order-card">
+                    <!-- Order Header -->
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h3>Order #{{ order.id }}</h3>
+                            <p class="order-date">{{ order.created_at|date:"M d, Y \a\t H:i" }}</p>
+                        </div>
+                        <div class="order-status">
+                            <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <h4>Items Ordered</h4>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                    <tr>
+                                        <td>{{ item.product.name }}</td>
+                                        <td><span class="qty-badge">{{ item.quantity }}</span></td>
+                                        <td>${{ item.price|floatformat:2 }}</td>
+                                        <td class="subtotal">${{ item.get_subtotal|floatformat:2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="order-details-row">
+                        <div class="detail-col">
+                            <h4>Shipping Address</h4>
+                            <p>{{ order.address }}</p>
+                            <p>{{ order.city }}, {{ order.state }} {{ order.postal_code }}</p>
+                        </div>
+                        <div class="detail-col">
+                            <h4>Order Summary</h4>
+                            <div class="summary-item">
+                                <span>Subtotal:</span>
+                                <strong>${{ order.total_amount|floatformat:2 }}</strong>
+                            </div>
+                            <div class="summary-item">
+                                <span>Shipping:</span>
+                                <strong>FREE</strong>
+                            </div>
+                            <div class="summary-item total">
+                                <span>Total Amount:</span>
+                                <strong>${{ order.total_amount|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+                        <div class="detail-col">
+                            <h4>Payment</h4>
+                            <p><strong>{{ order.get_payment_method_display }}</strong></p>
+                            <p class="text-muted">Status: {{ order.get_status_display }}</p>
+                            <a href="{% url 'download_invoice' order.id %}" class="download-btn">
+                                <i class="fas fa-download"></i> Download Invoice
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-orders">
+            <div class="no-orders-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h2>No Orders Yet</h2>
+            <p>You haven't placed any orders yet. Start shopping now!</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="{% url 'user_profile' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
+    </div>
+</div>
+
+<style>
+.orders-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    min-height: 80vh;
+}
+
+.orders-header {
+    text-align: center;
+    margin-bottom: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+}
+
+.orders-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.orders-header i {
+    font-size: 2rem;
+}
+
+.orders-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.order-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+}
+
+.order-header {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.order-info h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin: 0 0 5px 0;
+    font-weight: 700;
+}
+
+.order-date {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.order-status {
+    text-align: right;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: white;
+}
+
+.status-pending {
+    background: #ffc107;
+    color: #333;
+}
+
+.status-confirmed {
+    background: #17a2b8;
+}
+
+.status-shipped {
+    background: #007bff;
+}
+
+.status-delivered {
+    background: #28a745;
+}
+
+.status-cancelled {
+    background: #dc3545;
+}
+
+.order-items {
+    padding: 25px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.order-items h4 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.items-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+}
+
+.items-table td {
+    padding: 12px;
+    border-bottom: 1px solid #dee2e6;
+    color: #666;
+}
+
+.qty-badge {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.items-table .subtotal {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.order-details-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 25px;
+}
+
+.detail-col h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.detail-col p {
+    margin: 5px 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: #999 !important;
+    font-size: 0.9rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    color: #666;
+}
+
+.summary-item strong {
+    color: #333;
+}
+
+.summary-item.total {
+    border-top: 2px solid #667eea;
+    border-bottom: none;
+    padding-top: 15px;
+    padding-bottom: 0;
+    font-size: 1.1rem;
+    color: #667eea;
+}
+
+.summary-item.total strong {
+    color: #667eea;
+    font-size: 1.2rem;
+}
+
+.download-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.no-orders {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+}
+
+.no-orders-icon {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.no-orders h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.no-orders p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.btn-outline {
+    background: white;
+    border: 2px solid #667eea;
+    color: #667eea;
+}
+
+.btn-outline:hover {
+    background: #667eea;
+    color: white;
+}
+
+.back-button {
+    text-align: center;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .orders-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .order-status {
+        text-align: left;
+    }
+
+    .order-details-row {
+        grid-template-columns: 1fr;
+    }
+
+    .items-table {
+        font-size: 0.9rem;
+    }
+
+    .items-table th,
+    .items-table td {
+        padding: 8px;
+    }
+}
+</style>
+{% endblock %}

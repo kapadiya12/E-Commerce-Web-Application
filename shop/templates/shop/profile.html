@@ -1,0 +1,347 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}My Profile - ShopHub{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-wrapper">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <i class="fas fa-user-circle profile-icon"></i>
+            <h1>My Profile</h1>
+            <p class="profile-subtitle">Manage your account and orders</p>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-grid">
+            <!-- User Information Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-id-card"></i>
+                    <h2>User Information</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <label>Username</label>
+                        <span class="info-value">{{ user.username }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Email</label>
+                        <span class="info-value">{{ user.email }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Full Name</label>
+                        <span class="info-value">{{ user.first_name|default:"Not set" }} {{ user.last_name|default:"" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Member Since</label>
+                        <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Total Orders</label>
+                        <span class="info-value badge-pill">{{ user_orders_count }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-bolt"></i>
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="card-body actions-body">
+                    <a href="{% url 'my_orders' %}" class="action-btn btn-primary">
+                        <i class="fas fa-history"></i>
+                        <span>My Orders</span>
+                        <small>View order history</small>
+                    </a>
+                    <a href="{% url 'product_list' %}" class="action-btn btn-secondary">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Continue Shopping</span>
+                        <small>Browse products</small>
+                    </a>
+                    <a href="{% url 'user_logout' %}" class="action-btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                        <small>Sign out from account</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Stats -->
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ user_orders_count }}</h3>
+                    <p>Total Orders</p>
+                </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Active</h3>
+                    <p>Account Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    min-height: 80vh;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.profile-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 50px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.profile-icon {
+    font-size: 4rem;
+    color: #667eea;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.profile-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.profile-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-card:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.card-header i {
+    font-size: 1.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row label {
+    font-weight: 600;
+    color: #333;
+}
+
+.info-value {
+    color: #667eea;
+    font-weight: 500;
+}
+
+.badge-pill {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.actions-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    color: white;
+    font-weight: 600;
+}
+
+.action-btn i {
+    font-size: 1.5rem;
+    min-width: 30px;
+}
+
+.action-btn span {
+    flex: 1;
+}
+
+.action-btn small {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-primary:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.btn-secondary:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%, #2BFF88 100%);
+}
+
+.btn-danger:hover {
+    transform: translateX(5px);
+    opacity: 0.9;
+}
+
+.profile-stats {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.stat-info h3 {
+    font-size: 2rem;
+    color: #333;
+    margin: 0;
+    font-weight: 700;
+}
+
+.stat-info p {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 5px 0 0 0;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 60px;
+    background: #eee;
+    margin: 0 30px;
+}
+
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-stats {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .stat-divider {
+        width: 60px;
+        height: 1px;
+        margin: 0;
+    }
+
+    .profile-header h1 {
+        font-size: 2rem;
+    }
+
+    .profile-icon {
+        font-size: 3rem;
+    }
+}
+</style>
+{% endblock %}

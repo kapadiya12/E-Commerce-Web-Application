@@ -1,0 +1,170 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Shopping Cart - ShopHub{% endblock %}
+
+{% block content %}
+    <!-- PAGE HEADER -->
+    <h1 class="section-title mb-4">
+        <i class="fas fa-shopping-cart"></i> Shopping Cart
+    </h1>
+
+    {% if cart_items %}
+        <div class="row">
+            <!-- CART ITEMS -->
+            <div class="col-lg-8">
+                <div class="cart-items-list">
+                    {% for item in cart_items %}
+                        <div class="cart-item">
+                            <!-- Product Image -->
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'images/no-image.svg' %}" alt="No Image" class="cart-item-image" loading="lazy">
+                            {% endif %}
+                            
+                            <!-- Item Details -->
+                            <div class="cart-item-details">
+                                <h3 class="cart-item-name">
+                                    <a href="{% url 'product_detail' pk=item.product.id %}" style="text-decoration: none; color: inherit;">
+                                        {{ item.product.name }}
+                                    </a>
+                                </h3>
+                                <p class="cart-item-price">
+                                    <i class="fas fa-rupee-sign"></i> {{ item.product.price }} per item
+                                </p>
+                                {% if item.product.category %}
+                                    <p class="text-muted" style="font-size: 0.9rem;">
+                                        <i class="fas fa-tag"></i> {{ item.product.category.name }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Quantity & Update -->
+                            <div>
+                                <form method="POST" action="{% url 'update_cart_item' item.id %}" class="d-flex align-items-center gap-2">
+                                    {% csrf_token %}
+                                    <label>Qty:</label>
+                                    {% with form=forms_dict|get_item:item.id %}
+                                        {{ form.quantity }}
+                                        <button type="submit" class="btn btn-primary" style="padding: 8px 15px;">
+                                            <i class="fas fa-sync-alt"></i> Update
+                                        </button>
+                                    {% endwith %}
+                                </form>
+                                {% with form=forms_dict|get_item:item.id %}
+                                    {% if form.quantity.errors %}
+                                        <div class="form-error">
+                                            {% for error in form.quantity.errors %}
+                                                <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                            
+                            <!-- Subtotal -->
+                            <div>
+                                <p style="font-size: 1.1rem; font-weight: 600; color: var(--primary-color);">
+                                    <i class="fas fa-rupee-sign"></i> {{ item.get_subtotal }}
+                                </p>
+                            </div>
+                            
+                            <!-- Remove Button -->
+                            <div>
+                                <form method="POST" action="{% url 'remove_from_cart' item.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" style="padding: 8px 15px;" onclick="return confirm('Remove this item?')">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- CART SUMMARY -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h3 style="margin-bottom: 20px;">Order Summary</h3>
+                    
+                    <div class="summary-row">
+                        <span><i class="fas fa-cube"></i> Items:</span>
+                        <span><strong>{{ item_count }}</strong></span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span><i class="fas fa-calculator"></i> Subtotal:</span>
+                        <span><i class="fas fa-rupee-sign"></i>{{ total }}</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span><i class="fas fa-truck"></i> Shipping:</span>
+                        <span style="color: #28a745;"><strong>FREE</strong></span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span><i class="fas fa-percent"></i> Tax:</span>
+                        <span>Included</span>
+                    </div>
+                    
+                    <div class="summary-total">
+                        <span><i class="fas fa-money-bill"></i> Total:</span>
+                        <span style="margin-left: auto;"><i class="fas fa-rupee-sign"></i>{{ total }}</span>
+                    </div>
+                    
+                    <!-- Checkout Button -->
+                    <a href="{% url 'checkout' %}" class="btn btn-primary w-100" style="padding: 12px; margin-top: 20px; font-weight: 600;">
+                        <i class="fas fa-lock"></i> Proceed to Checkout
+                    </a>
+                    
+                    <!-- Continue Shopping -->
+                    <a href="{% url 'product_list' %}" class="btn btn-secondary w-100" style="padding: 12px; margin-top: 10px;">
+                        <i class="fas fa-arrow-left"></i> Continue Shopping
+                    </a>
+                    
+                    <!-- Back to Home -->
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100" style="padding: 12px; margin-top: 10px;">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- EMPTY CART -->
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3>Your Cart is Empty</h3>
+            <p class="text-muted">You haven't added any products to your cart yet.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-secondary mt-3">
+                <i class="fas fa-home"></i> Go to Home
+            </a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Client-side quantity validation
+    document.querySelectorAll('input[name="quantity"]').forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.value < 1) {
+                alert('Quantity must be at least 1');
+                this.value = 1;
+            }
+            if (this.value > 100) {
+                alert('Maximum quantity is 100');
+                this.value = 100;
+            }
+        });
+    });
+</script>
+{% endblock %}
+

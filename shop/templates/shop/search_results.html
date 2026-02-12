@@ -1,0 +1,113 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{% if query %}Search Results for "{{ query }}"{% else %}Search Products{% endif %} - ShopHub{% endblock %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-lg-3">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <h3>Categories</h3>
+                <ul class="category-list">
+                    <li><a href="{% url 'product_list' %}">All Products</a></li>
+                    {% for cat in categories %}
+                        <li>
+                            <a href="{% url 'category_detail' slug=cat.slug %}">
+                                {{ cat.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- SEARCH HEADER -->
+            {% if query %}
+                <h2 class="section-title mb-4">
+                    <i class="fas fa-search"></i> Search Results for "{{ query }}"
+                </h2>
+            {% else %}
+                <h2 class="section-title mb-4">
+                    <i class="fas fa-search"></i> Search Products
+                </h2>
+            {% endif %}
+
+            {% if products %}
+                <!-- RESULTS COUNT -->
+                <p class="text-muted mb-4">
+                    Found <strong>{{ products|length }}</strong> product(s)
+                </p>
+
+                <!-- PRODUCT GRID -->
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="product-card">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image" loading="lazy" onerror="this.src='{% static 'images/no-image.svg' %}'">
+                                {% else %}
+                                    <img src="{% static 'images/no-image.svg' %}" alt="No Image" class="product-image" loading="lazy">
+                                {% endif %}
+                                
+                                <div class="product-body">
+                                    <h3 class="product-name">{{ product.name }}</h3>
+                                    <p class="product-description">{{ product.description|truncatewords:10 }}</p>
+                                    
+                                    <p class="product-price">
+                                        <i class="fas fa-rupee-sign"></i> {{ product.price }}
+                                    </p>
+                                    
+                                    {% if product.category %}
+                                        <p class="text-muted" style="font-size: 0.9rem;">
+                                            <i class="fas fa-tag"></i> {{ product.category.name }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    {% if product.is_in_stock %}
+                                        <span class="stock-status in-stock">
+                                            <i class="fas fa-check-circle"></i> In Stock
+                                        </span>
+                                    {% else %}
+                                        <span class="stock-status out-of-stock">
+                                            <i class="fas fa-times-circle"></i> Out of Stock
+                                        </span>
+                                    {% endif %}
+                                    
+                                    <div class="product-actions mt-3">
+                                        <a href="{% url 'product_detail' pk=product.id %}" class="btn btn-secondary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        {% if product.is_in_stock %}
+                                            <form method="POST" action="{% url 'add_to_cart' pk=product.id %}" style="flex: 1;">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary w-100">
+                                                    <i class="fas fa-cart-plus"></i> Add
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <button class="btn btn-primary w-100" disabled>
+                                                <i class="fas fa-ban"></i> Unavailable
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning text-center py-5">
+                    <i class="fas fa-search"></i>
+                    {% if query %}
+                        <p>No products found for "<strong>{{ query }}</strong>"</p>
+                        <p>Try searching with different keywords or <a href="{% url 'product_list' %}">browse all products</a></p>
+                    {% else %}
+                        <p>Enter search terms to find products</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

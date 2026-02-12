@@ -1,0 +1,302 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1><i class="fas fa-user-plus"></i> Create Account</h1>
+                <p>Join us and start shopping today!</p>
+            </div>
+
+            <form method="POST" class="auth-form" id="registerForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" 
+                           id="id_username" 
+                           name="username" 
+                           class="form-control form-control-lg" 
+                           placeholder="Choose a username"
+                           required>
+                    <small class="form-text">Letters, numbers, and underscores only</small>
+                    <div class="error-message" id="username_error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_email">Email Address</label>
+                    <input type="email" 
+                           id="id_email" 
+                           name="email" 
+                           class="form-control form-control-lg" 
+                           placeholder="Enter your email"
+                           required>
+                    <div class="error-message" id="email_error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" 
+                           id="id_password" 
+                           name="password" 
+                           class="form-control form-control-lg" 
+                           placeholder="Enter password (min 6 characters)"
+                           required>
+                    <small class="form-text">At least 6 characters</small>
+                    <div class="error-message" id="password_error"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_confirm_password">Confirm Password</label>
+                    <input type="password" 
+                           id="id_confirm_password" 
+                           name="confirm_password" 
+                           class="form-control form-control-lg" 
+                           placeholder="Confirm your password"
+                           required>
+                    <div class="error-message" id="confirm_password_error"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 auth-btn">
+                    <i class="fas fa-user-check"></i> Create Account
+                </button>
+            </form>
+
+            <div class="auth-divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <a href="{% url 'user_login' %}" class="btn btn-outline-primary btn-lg w-100">
+                <i class="fas fa-sign-in-alt"></i> Login Here
+            </a>
+
+            <div class="auth-footer">
+                <a href="{% url 'home' %}" class="footer-link">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-box {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    padding: 50px 40px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 1.05rem;
+}
+
+.auth-form {
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.form-text {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+    font-size: 0.85rem;
+}
+
+.form-control {
+    border: 2px solid #e0e0e0;
+    padding: 12px 15px;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.auth-btn {
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.auth-divider {
+    text-align: center;
+    margin: 30px 0;
+    color: #999;
+    font-size: 0.95rem;
+}
+
+.btn-outline-primary {
+    color: #667eea;
+    border: 2px solid #667eea;
+    background: white;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.footer-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #764ba2;
+}
+
+@media (max-width: 600px) {
+    .auth-box {
+        padding: 30px 20px;
+    }
+    
+    .auth-header h1 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const username = document.getElementById('id_username').value.trim();
+    const email = document.getElementById('id_email').value.trim();
+    const password = document.getElementById('id_password').value;
+    const confirmPassword = document.getElementById('id_confirm_password').value;
+    
+    let hasError = false;
+
+    // Clear previous errors
+    document.querySelectorAll('.error-message').forEach(el => {
+        el.textContent = '';
+        el.classList.remove('show');
+    });
+
+    // Validate username
+    if (!username) {
+        showError('username_error', 'Username is required');
+        hasError = true;
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        showError('username_error', 'Username can only contain letters, numbers, and underscores');
+        hasError = true;
+    }
+
+    // Validate email
+    if (!email) {
+        showError('email_error', 'Email is required');
+        hasError = true;
+    } else if (!isValidEmail(email)) {
+        showError('email_error', 'Please enter a valid email address');
+        hasError = true;
+    }
+
+    // Validate password
+    if (!password) {
+        showError('password_error', 'Password is required');
+        hasError = true;
+    } else if (password.length < 6) {
+        showError('password_error', 'Password must be at least 6 characters');
+        hasError = true;
+    }
+
+    // Validate confirm password
+    if (!confirmPassword) {
+        showError('confirm_password_error', 'Please confirm your password');
+        hasError = true;
+    } else if (password !== confirmPassword) {
+        showError('confirm_password_error', 'Passwords do not match');
+        hasError = true;
+    }
+
+    if (hasError) {
+        e.preventDefault();
+    }
+});
+
+function showError(elementId, message) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.classList.add('show');
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+</script>
+{% endblock %}

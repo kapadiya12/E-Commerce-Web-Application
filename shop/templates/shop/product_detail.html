@@ -1,0 +1,174 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - ShopHub{% endblock %}
+
+{% block content %}
+<!-- BREADCRUMB -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Products</a></li>
+        {% if product.category %}
+            <li class="breadcrumb-item">
+                <a href="{% url 'category_detail' slug=product.category.slug %}">
+                    {{ product.category.name }}
+                </a>
+            </li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ product.name }}</li>
+    </ol>
+</nav>
+
+<!-- PRODUCT DETAIL -->
+<div class="row">
+    <!-- Product Image -->
+    <div class="col-lg-6 mb-4">
+        <div class="product-detail">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-detail-image" loading="lazy">
+            {% else %}
+                <img src="{% static 'images/no-image.svg' %}" alt="No Image" class="product-detail-image" loading="lazy">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="col-lg-6">
+        <div class="product-detail">
+
+            <h1 class="product-detail-name">{{ product.name }}</h1>
+
+            <div class="product-detail-price">
+                <i class="fas fa-rupee-sign"></i>{{ product.price }}
+            </div>
+
+            {% if product.category %}
+                <div class="mb-3">
+                    <p class="text-muted">
+                        <i class="fas fa-tag"></i>
+                        <a href="{% url 'category_detail' slug=product.category.slug %}" style="color: var(--primary-color);">
+                            {{ product.category.name }}
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+
+            <!-- Stock -->
+            <div class="product-detail-stock">
+                {% if product.is_in_stock %}
+                    <span class="stock-status in-stock">
+                        <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} available)
+                    </span>
+                {% else %}
+                    <span class="stock-status out-of-stock">
+                        <i class="fas fa-times-circle"></i> Out of Stock
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="product-detail-description">
+                <h5>Description:</h5>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <!-- ADD TO CART -->
+            {% if product.is_in_stock %}
+                <div class="d-flex align-items-center gap-3 mt-3">
+
+                    <div style="display:flex;align-items:center;border:1px solid #ccc;border-radius:8px;overflow:hidden;">
+                        <button type="button" onclick="decreaseQty()" style="padding:10px 16px;border:none;background:#f1f1f1;">−</button>
+                        <input type="number" id="qtyInput" value="1" min="1" max="{{ product.stock }}" 
+                               style="width:60px;text-align:center;border:none;">
+                        <button type="button" onclick="increaseQty()" style="padding:10px 16px;border:none;background:#f1f1f1;">+</button>
+                    </div>
+
+                    <button type="button" onclick="addToCartAjax({{ product.id }})" class="btn btn-primary btn-lg">
+                        <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+
+                </div>
+            {% else %}
+                <button class="btn btn-danger btn-lg" disabled>
+                    <i class="fas fa-ban"></i> Out of Stock
+                </button>
+            {% endif %}
+
+            <!-- Extra Info -->
+            <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e0e0e0;">
+                <h5>Why Shop with Us?</h5>
+                <ul style="list-style: none; padding: 0;">
+                    <li><i class="fas fa-check-circle text-success"></i> Free Shipping on Orders Over 500</li>
+                    <li><i class="fas fa-check-circle text-success"></i> 30-Day Easy Returns</li>
+                    <li><i class="fas fa-check-circle text-success"></i> Secure Payment Gateway</li>
+                    <li><i class="fas fa-check-circle text-success"></i> 24/7 Customer Support</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+function increaseQty() {
+    let input = document.getElementById("qtyInput");
+    let max = parseInt(input.max);
+    let val = parseInt(input.value);
+    if (val < max) input.value = val + 1;
+}
+
+function decreaseQty() {
+    let input = document.getElementById("qtyInput");
+    let val = parseInt(input.value);
+    if (val > 1) input.value = val - 1;
+}
+function showToast(message) {
+    let toast = document.createElement("div");
+    toast.innerText = message;
+
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.background = "#22c55e";
+    toast.style.color = "white";
+    toast.style.padding = "12px 18px";
+    toast.style.borderRadius = "8px";
+    toast.style.fontWeight = "600";
+    toast.style.boxShadow = "0 5px 15px rgba(0,0,0,0.2)";
+    toast.style.zIndex = "9999";
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
+}
+
+function addToCartAjax(productId) {
+    fetch(`/cart/add/${productId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+    if (data.success) {
+        let cartCount = document.getElementById("cart-count");
+        if (cartCount) {
+            cartCount.innerText = data.cart_count;
+        }
+
+        // ✅ Simple success message
+        showToast("Item added to cart successfully ✅");
+    } else {
+        showToast(data.error || "Something went wrong ❌");
+    }
+});
+}
+</script>
+
+{% endblock %}
